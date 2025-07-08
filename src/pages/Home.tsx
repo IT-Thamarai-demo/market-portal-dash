@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import ProductCard from '@/components/ProductCard';
+import ProductCard from '@/components/ui/ProductCard';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
 
@@ -38,7 +38,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products/approved');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approved`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);

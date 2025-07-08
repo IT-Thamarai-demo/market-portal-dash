@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,25 +31,25 @@ const AdminDashboard = () => {
 
   const fetchPendingProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products/pending', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/pending`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data.filter((product: Product) => product.status === 'pending'));
-      } else {
-        throw new Error('Failed to fetch products');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      setProducts(data);
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to load pending products. Please try again.",
         variant: "destructive",
       });
-      console.error('Error fetching pending products:', error);
+      console.error('Fetch error:', error);
     } finally {
       setLoading(false);
     }
@@ -59,26 +58,26 @@ const AdminDashboard = () => {
   const handleApprove = async (productId: string) => {
     setProcessingId(productId);
     try {
-      const response = await fetch(`http://localhost:5000/api/products/approve/${productId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approve/${productId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        setProducts(products.filter(p => p.id !== productId));
-        toast({
-          title: "Product Approved",
-          description: "The product has been approved and is now live.",
-        });
-      } else {
+      if (!response.ok) {
         throw new Error('Failed to approve product');
       }
+
+      setProducts(products.filter(p => p.id !== productId));
+      toast({
+        title: "Product Approved",
+        description: "The product has been approved and is now live.",
+      });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to approve product. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to approve product",
         variant: "destructive",
       });
     } finally {
@@ -89,43 +88,32 @@ const AdminDashboard = () => {
   const handleReject = async (productId: string) => {
     setProcessingId(productId);
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      if (response.ok) {
-        setProducts(products.filter(p => p.id !== productId));
-        toast({
-          title: "Product Rejected",
-          description: "The product has been rejected and removed.",
-        });
-      } else {
+      if (!response.ok) {
         throw new Error('Failed to reject product');
       }
+
+      setProducts(products.filter(p => p.id !== productId));
+      toast({
+        title: "Product Rejected",
+        description: "The product has been rejected and removed.",
+      });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to reject product. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to reject product",
         variant: "destructive",
       });
     } finally {
       setProcessingId(null);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50 py-8">

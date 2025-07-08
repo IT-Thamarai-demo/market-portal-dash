@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,8 +21,7 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
     if (!formData.email.includes('@')) {
       toast({
         title: "Invalid Email",
@@ -43,9 +41,9 @@ const Register = () => {
     }
 
     setLoading(true);
-    
+
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,16 +55,26 @@ const Register = () => {
 
       if (response.ok) {
         login(data.token, data.user);
+
         toast({
           title: "Registration Successful",
           description: "Welcome to MarketPlace!",
         });
-        
-        // Redirect based on role
-        if (data.user.role === 'vendor') {
-          navigate('/vendor');
+
+        // 🔀 Redirect based on role
+        if (data.user && data.user.role) {
+          switch (data.user.role) {
+            case 'vendor':
+              navigate('/vendor');
+              break;
+            case 'admin':
+              navigate('/admin');
+              break;
+            default:
+              navigate('/');
+          }
         } else {
-          navigate('/');
+          throw new Error(data.message || 'Registration failed');
         }
       } else {
         throw new Error(data.message || 'Registration failed');
@@ -117,13 +125,17 @@ const Register = () => {
 
             <div className="space-y-2">
               <Label>Role</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <Select
+                value={formData.role}
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
+              >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">User (Buyer)</SelectItem>
                   <SelectItem value="vendor">Vendor (Seller)</SelectItem>
+                  <SelectItem value="admin">Admin (Manager)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

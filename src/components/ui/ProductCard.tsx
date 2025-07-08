@@ -1,7 +1,13 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +18,7 @@ interface Product {
   description: string;
   price: number;
   image?: string;
+  cloudinaryPublicId?: string;
   status: 'approved' | 'pending' | 'rejected';
   vendorId?: string;
 }
@@ -24,19 +31,38 @@ interface ProductCardProps {
   showActions?: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ 
-  product, 
-  onEdit, 
-  onApprove, 
-  onReject, 
-  showActions = true 
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onEdit,
+  onApprove,
+  onReject,
+  showActions = true,
 }) => {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
+  // Cloudinary URL generator with optional transformations
+  const getCloudinaryImageUrl = (
+    publicId: string,
+    transformations = 'w_500,h_500,c_fill,q_auto,f_auto/'
+  ) => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dq43oxtjn';
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}${publicId}`;
+  };
+
+  // Determine image source with fallbacks
+  const imageSrc = product.cloudinaryPublicId
+    ? getCloudinaryImageUrl(product.cloudinaryPublicId)
+    : product.image?.startsWith('http')
+    ? product.image
+    : product.image
+    ? `http://localhost:5000${product.image}`
+    : null;
+
+  // Add to cart action
   const handleAddToCart = () => {
     toast({
-      title: "Added to Cart",
+      title: 'Added to Cart',
       description: `${product.name} has been added to your cart.`,
     });
   };
@@ -48,12 +74,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
       <CardHeader>
-        <div className="aspect-square bg-gray-200 rounded-md mb-4 flex items-center justify-center">
-          {product.image ? (
-            <img 
-              src={product.image} 
+        <div className="aspect-square bg-gray-200 rounded-md mb-4 flex items-center justify-center overflow-hidden">
+          {imageSrc ? (
+            <img
+              src={imageSrc}
               alt={product.name}
-              className="w-full h-full object-cover rounded-md"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder-product.png';
+              }}
             />
           ) : (
             <span className="text-gray-500">No Image</span>
@@ -62,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <CardTitle className="line-clamp-2">{product.name}</CardTitle>
         <CardDescription className="line-clamp-3">{product.description}</CardDescription>
       </CardHeader>
-      
+
       <CardContent className="flex-1">
         <div className="flex items-center justify-between">
           <span className="text-2xl font-bold text-primary">
@@ -76,21 +106,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* User actions */}
+          {/* Customer: Add to Cart */}
           {isAuthenticated && !isVendor && !isAdmin && product.status === 'approved' && (
             <Button onClick={handleAddToCart} className="flex-1">
               Add to Cart
             </Button>
           )}
 
-          {/* Vendor actions */}
+          {/* Vendor: Edit button */}
           {isOwnProduct && onEdit && (
             <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
               Edit
             </Button>
           )}
 
-          {/* Admin actions */}
+          {/* Admin: Approve/Reject buttons */}
           {isAdmin && product.status === 'pending' && (
             <>
               {onApprove && (
@@ -99,7 +129,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </Button>
               )}
               {onReject && (
-                <Button onClick={() => onReject(product.id)} variant="destructive" className="flex-1">
+                <Button
+                  onClick={() => onReject(product.id)}
+                  variant="destructive"
+                  className="flex-1"
+                >
                   Reject
                 </Button>
               )}

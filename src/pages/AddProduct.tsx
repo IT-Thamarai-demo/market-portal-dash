@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,8 +14,8 @@ const AddProduct = () => {
     name: '',
     description: '',
     price: '',
-    image: null as File | null
   });
+  const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -43,23 +42,31 @@ const AddProduct = () => {
       return;
     }
 
+    if (!image) {
+      toast({
+        title: "Image Required",
+        description: "Please upload a product image.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
-      const productData = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        image: formData.image ? 'placeholder-image-url' : undefined // Placeholder for image upload
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', formData.price);
+      formDataToSend.append('image', image);
 
-      const response = await fetch('http://localhost:5000/api/products/add', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/add`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
+          // Don't set Content-Type header - the browser will set it with the correct boundary
         },
-        body: JSON.stringify(productData),
+        body: formDataToSend,
       });
 
       if (response.ok) {
@@ -86,7 +93,7 @@ const AddProduct = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, image: file });
+      setImage(file);
     }
   };
 
@@ -142,7 +149,7 @@ const AddProduct = () => {
                   id="price"
                   type="number"
                   step="0.01"
-                  min="0"
+                  min="0.01"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   placeholder="0.00"
@@ -151,7 +158,7 @@ const AddProduct = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image">Product Image</Label>
+                <Label htmlFor="image">Product Image *</Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                   <p className="text-sm text-gray-600 mb-2">
@@ -164,10 +171,11 @@ const AddProduct = () => {
                     accept="image/*"
                     onChange={handleImageChange}
                     className="mt-2"
+                    required
                   />
-                  {formData.image && (
+                  {image && (
                     <p className="mt-2 text-sm text-green-600">
-                      Selected: {formData.image.name}
+                      Selected: {image.name}
                     </p>
                   )}
                 </div>

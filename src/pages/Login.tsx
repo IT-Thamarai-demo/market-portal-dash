@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       toast({
         title: "Missing Information",
@@ -31,9 +30,9 @@ const Login = () => {
     }
 
     setLoading(true);
-    
+
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${import.meta.env.BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,13 +42,14 @@ const Login = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.user && data.token) {
         login(data.token, data.user);
+
         toast({
           title: "Login Successful",
           description: "Welcome back!",
         });
-        
+
         // Redirect based on role
         switch (data.user.role) {
           case 'vendor':
@@ -62,12 +62,17 @@ const Login = () => {
             navigate('/');
         }
       } else {
-        throw new Error(data.message || 'Login failed');
+        toast({
+          title: "Login Failed",
+          description: data.message || "Invalid credentials or user not found.",
+          variant: "destructive",
+        });
       }
+
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
