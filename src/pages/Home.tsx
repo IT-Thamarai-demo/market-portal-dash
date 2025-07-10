@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ui/ProductCard';
 import { useToast } from '@/hooks/use-toast';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -83,6 +83,7 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [isServerConnected, setIsServerConnected] = useState(false);
   const { toast } = useToast();
 
   const categories = ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports'];
@@ -95,34 +96,72 @@ const Home = () => {
     filterProducts();
   }, [products, searchTerm, selectedCategory]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (showRetryMessage = false) => {
+    if (showRetryMessage) {
+      setLoading(true);
+    }
+    
     try {
       const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/products/approved`;
       console.log('Fetching products from:', apiUrl);
       
-      const response = await fetch(apiUrl);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(apiUrl, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched products:', data);
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
+        setIsServerConnected(true);
+        
+        if (showRetryMessage) {
+          toast({
+            title: "Connected!",
+            description: "Successfully connected to server.",
+            variant: "default",
+          });
+        }
       } else {
-        throw new Error('Failed to fetch products');
+        throw new Error(`Server responded with status: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      setIsServerConnected(false);
       
       // Use dummy data as fallback
       console.log('Using dummy data as fallback');
       setProducts(dummyProducts);
       
-      toast({
-        title: "Using Demo Data",
-        description: "Could not connect to server. Showing sample products.",
-        variant: "default",
-      });
+      if (showRetryMessage) {
+        toast({
+          title: "Connection Failed",
+          description: "Could not connect to server. Using demo data.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Using Demo Data",
+          description: "Could not connect to server. Showing sample products.",
+          variant: "default",
+        });
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    fetchProducts(true);
   };
 
   const filterProducts = () => {
@@ -164,6 +203,25 @@ const Home = () => {
           <p className="text-xl md:text-2xl mb-8 opacity-90">
             Discover amazing products from trusted vendors
           </p>
+          
+          {/* Server Status Indicator */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className={`w-3 h-3 rounded-full ${isServerConnected ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+            <span className="text-sm opacity-90">
+              {isServerConnected ? 'Connected to server' : 'Using demo data'}
+            </span>
+            {!isServerConnected && (
+              <Button 
+                onClick={handleRetry} 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 text-white border-white hover:bg-white hover:text-primary"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry Connection
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
