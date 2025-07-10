@@ -75,7 +75,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isVendor = user?.role === 'vendor';
   const isAdmin = user?.role === 'admin';
   const isOwnProduct = isVendor && product.vendorId === user?.id;
-  const isCustomer = isAuthenticated && !isVendor && !isAdmin;
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
@@ -112,8 +111,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* Customer: Add to Cart button - always show for approved products */}
-          {isCustomer && product.status === 'approved' && (
+          {/* Add to Cart button - show for approved products for everyone except admin */}
+          {product.status === 'approved' && !isAdmin && (
             <Button onClick={handleAddToCart} className="flex-1">
               Add to Cart
             </Button>
@@ -144,13 +143,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </Button>
               )}
             </>
-          )}
-
-          {/* Show Add to Cart for non-authenticated users too */}
-          {!isAuthenticated && product.status === 'approved' && (
-            <Button onClick={handleAddToCart} className="flex-1">
-              Add to Cart
-            </Button>
           )}
         </CardFooter>
       )}

@@ -52,7 +52,7 @@ const CartContent = () => {
               : item.image?.startsWith('http')
               ? item.image
               : item.image
-              ? `http://localhost:5000${item.image}`
+              ? `${import.meta.env.VITE_API_BASE_URL}${item.image}`
               : null;
 
             return (

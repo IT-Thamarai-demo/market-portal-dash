@@ -19,6 +19,64 @@ interface Product {
   cloudinaryPublicId?: string;
 }
 
+// Dummy data for testing
+const dummyProducts: Product[] = [
+  {
+    id: '1',
+    name: 'iPhone 15 Pro',
+    description: 'Latest iPhone with titanium design and advanced camera system',
+    price: 999.99,
+    status: 'approved',
+    category: 'Electronics',
+    vendorId: 'vendor1',
+  },
+  {
+    id: '2',
+    name: 'MacBook Air M2',
+    description: 'Lightweight laptop with M2 chip and all-day battery life',
+    price: 1199.99,
+    status: 'approved',
+    category: 'Electronics',
+    vendorId: 'vendor2',
+  },
+  {
+    id: '3',
+    name: 'Nike Air Max 270',
+    description: 'Comfortable running shoes with Max Air unit',
+    price: 149.99,
+    status: 'approved',
+    category: 'Clothing',
+    vendorId: 'vendor3',
+  },
+  {
+    id: '4',
+    name: 'Samsung Galaxy S24',
+    description: 'Flagship Android phone with AI features',
+    price: 899.99,
+    status: 'approved',
+    category: 'Electronics',
+    vendorId: 'vendor4',
+  },
+  {
+    id: '5',
+    name: 'Adidas Ultraboost 22',
+    description: 'Premium running shoes with boost technology',
+    price: 189.99,
+    status: 'approved',
+    category: 'Sports',
+    vendorId: 'vendor5',
+  },
+  {
+    id: '6',
+    name: 'The Great Gatsby',
+    description: 'Classic American novel by F. Scott Fitzgerald',
+    price: 12.99,
+    status: 'approved',
+    category: 'Books',
+    vendorId: 'vendor6',
+  },
+];
+
 const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -39,20 +97,29 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approved`);
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/products/approved`;
+      console.log('Fetching products from:', apiUrl);
+      
+      const response = await fetch(apiUrl);
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched products:', data);
         setProducts(data);
       } else {
         throw new Error('Failed to fetch products');
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load products. Please try again.",
-        variant: "destructive",
-      });
       console.error('Error fetching products:', error);
+      
+      // Use dummy data as fallback
+      console.log('Using dummy data as fallback');
+      setProducts(dummyProducts);
+      
+      toast({
+        title: "Using Demo Data",
+        description: "Could not connect to server. Showing sample products.",
+        variant: "default",
+      });
     } finally {
       setLoading(false);
     }
