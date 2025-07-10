@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import CartContent from '@/components/cart/CartContent';
 
-const Cart = () => {
+const Cart: React.FC = () => {
   const { getTotalItems } = useCart();
 
   return (
