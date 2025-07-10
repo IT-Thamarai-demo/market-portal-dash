@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 interface Product {
   id: string;
@@ -39,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showActions = true,
 }) => {
   const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
+  const { addToCart } = useCart();
 
   // Cloudinary URL generator with optional transformations
   const getCloudinaryImageUrl = (
@@ -61,9 +62,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   // Add to cart action
   const handleAddToCart = () => {
-    toast({
-      title: 'Added to Cart',
-      description: `${product.name} has been added to your cart.`,
+    addToCart({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      cloudinaryPublicId: product.cloudinaryPublicId,
     });
   };
 
