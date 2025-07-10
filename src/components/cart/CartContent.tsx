@@ -6,7 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
 
-const CartContent = () => {
+interface CartItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image?: string;
+  cloudinaryPublicId?: string;
+  quantity: number;
+}
+
+const CartContent: React.FC = () => {
   const { items, updateQuantity, removeFromCart, getTotalPrice, clearCart } = useCart();
 
   // Cloudinary URL generator with optional transformations
@@ -35,9 +45,9 @@ const CartContent = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Shopping Cart ({items.length} items)</CardTitle>
-          <Button 
-            onClick={clearCart} 
-            variant="outline" 
+          <Button
+            onClick={clearCart}
+            variant="outline"
             size="sm"
             className="text-red-600 hover:text-red-700"
           >
@@ -46,7 +56,7 @@ const CartContent = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {items.map((item) => {
+          {items.map((item: CartItem) => {
             const imageSrc = item.cloudinaryPublicId
               ? getCloudinaryImageUrl(item.cloudinaryPublicId)
               : item.image?.startsWith('http')
@@ -71,7 +81,7 @@ const CartContent = () => {
                     <span className="text-gray-500 text-xs">No Image</span>
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
                   <p className="text-sm text-gray-600 truncate">{item.description}</p>
@@ -92,9 +102,9 @@ const CartContent = () => {
                   >
                     <Minus className="h-3 w-3" />
                   </Button>
-                  
+
                   <span className="w-8 text-center font-medium">{item.quantity}</span>
-                  
+
                   <Button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     variant="outline"
@@ -103,7 +113,7 @@ const CartContent = () => {
                   >
                     <Plus className="h-3 w-3" />
                   </Button>
-                  
+
                   <Button
                     onClick={() => removeFromCart(item.id)}
                     variant="destructive"
