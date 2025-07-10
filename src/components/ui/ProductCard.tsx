@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/cartcontext';
+import { useCart } from '@/contexts/cartContext';
 
 interface Product {
   id: string;
