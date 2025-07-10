@@ -21,6 +21,7 @@ interface Product {
   cloudinaryPublicId?: string;
   status: 'approved' | 'pending' | 'rejected';
   vendorId?: string;
+  category?: string;
 }
 
 interface ProductCardProps {
@@ -38,34 +39,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onReject,
   showActions = true,
 }) => {
-  const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
+  const { user } = useAuth();
 
-  // Cloudinary URL generator with optional transformations
   const getCloudinaryImageUrl = (
     publicId: string,
-    transformations = 'w_500,h_500,c_fill,q_auto,f_auto/'
+    transformations = 'w_500,h_500,c_fill,q_auto,f_auto'
   ) => {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dq43oxtjn';
-    return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}${publicId}`;
+    return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}/${publicId}`;
   };
 
-  // Determine image source with fallbacks
   const imageSrc = product.cloudinaryPublicId
     ? getCloudinaryImageUrl(product.cloudinaryPublicId)
     : product.image?.startsWith('http')
     ? product.image
     : product.image
-    ? `http://localhost:5000${product.image}`
-    : null;
-
-  // Add to cart action
-  const handleAddToCart = () => {
-    toast({
-      title: 'Added to Cart',
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
+    ? `${import.meta.env.VITE_API_BASE_URL}${product.image}`
+    : '/placeholder-product.png';
 
   const isVendor = user?.role === 'vendor';
   const isAdmin = user?.role === 'admin';
@@ -75,19 +65,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="aspect-square bg-gray-200 rounded-md mb-4 flex items-center justify-center overflow-hidden">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={product.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder-product.png';
-              }}
-            />
-          ) : (
-            <span className="text-gray-500">No Image</span>
-          )}
+          <img
+            src={imageSrc}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder-product.png';
+            }}
+          />
         </div>
         <CardTitle className="line-clamp-2">{product.name}</CardTitle>
         <CardDescription className="line-clamp-3">{product.description}</CardDescription>
@@ -102,25 +88,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
             {product.status}
           </Badge>
         </div>
+        {product.category && (
+          <Badge variant="outline" className="mt-2">
+            {product.category}
+          </Badge>
+        )}
       </CardContent>
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* Customer: Add to Cart */}
-          {isAuthenticated && !isVendor && !isAdmin && product.status === 'approved' && (
-            <Button onClick={handleAddToCart} className="flex-1">
-              Add to Cart
-            </Button>
-          )}
-
-          {/* Vendor: Edit button */}
           {isOwnProduct && onEdit && (
             <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
               Edit
             </Button>
           )}
 
-          {/* Admin: Approve/Reject buttons */}
+          {isOwnProduct && onEdit && (
+            <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
+              Edit
+            </Button>
+          )}
+
           {isAdmin && product.status === 'pending' && (
             <>
               {onApprove && (
