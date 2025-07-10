@@ -31,7 +31,7 @@ const AdminDashboard = () => {
 
   const fetchPendingProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/pending`, {
+      const response = await fetch(`http://localhost:5000/api/products/pending`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
   const handleApprove = async (productId: string) => {
     setProcessingId(productId);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approve/${productId}`, {
+      const response = await fetch(`http://localhost:5000/api/products/approve/${productId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
   const handleReject = async (productId: string) => {
     setProcessingId(productId);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/${productId}`, {
+      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -63,6 +63,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        console.log(storedUser);
       }
     } catch (err) {
       console.error("Error restoring session:", err);
@@ -96,3 +97,5 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+export { useContext };
+

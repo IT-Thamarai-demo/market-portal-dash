@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import ProductCard from '@/components/ui/ProductCard';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
+import { useContext } from '../contexts/AuthContext';
 
 interface Product {
   id: string;
@@ -37,7 +38,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approved`);
+      const response = await fetch(`http://localhost:5000/api/products/approved`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -73,6 +74,7 @@ const Home = () => {
     setFilteredProducts(filtered);
   };
 
+  console.log(useContext)
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">

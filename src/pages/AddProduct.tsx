@@ -60,7 +60,7 @@ const AddProduct = () => {
       formDataToSend.append('price', formData.price);
       formDataToSend.append('image', image);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/add`, {
+      const response = await fetch(`http://localhost:5000/api/products/add`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

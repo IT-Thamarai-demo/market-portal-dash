@@ -1,14 +1,16 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingCart, Package, Shield, LogOut } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCart } from '@/contexts/cartContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
+  const { getTotalItems } = useCart();
+  const totalItems = getTotalItems();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -52,7 +54,17 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            
+
+            {/* Cart Icon */}
+            <Link to="/cart" className="relative">
+              <ShoppingCart className="h-6 w-6 text-primary" />
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">
@@ -106,7 +118,17 @@ const Navbar = () => {
               {item.name}
             </Link>
           ))}
-          
+
+          {/* Cart Link - Mobile */}
+          <Link
+            to="/cart"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center px-3 py-2 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md"
+          >
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Cart {totalItems > 0 && <span className="ml-1 text-sm text-red-500">({totalItems})</span>}
+          </Link>
+
           {isAuthenticated ? (
             <div className="px-3 py-2 space-y-2">
               <div className="text-sm text-gray-600">
@@ -121,9 +143,9 @@ const Navbar = () => {
             <div className="px-3 py-2 space-y-2">
               {authItems.map((item) => item.show && (
                 <Link key={item.path} to={item.path} onClick={() => setIsOpen(false)}>
-                  <Button 
-                    variant={item.name === 'Register' ? 'default' : 'outline'} 
-                    size="sm" 
+                  <Button
+                    variant={item.name === 'Register' ? 'default' : 'outline'}
+                    size="sm"
                     className="w-full"
                   >
                     {item.name}

@@ -30,7 +30,7 @@ const VendorDashboard = () => {
 
   const fetchVendorProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/my-products`, {
+      const response = await fetch(`http://localhost:5000/api/products/my-products`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

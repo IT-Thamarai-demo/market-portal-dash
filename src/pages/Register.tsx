@@ -19,76 +19,61 @@ const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!formData.email.includes('@')) {
+  if (!formData.email.includes('@')) {
+    toast({
+      title: "Invalid Email",
+      description: "Please enter a valid email address.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (formData.password.length < 8) {
+    toast({
+      title: "Password Too Short",
+      description: "Password must be at least 8 characters long.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive",
+        title: "Registration Successful",
+        description: "Please log in to continue.",
       });
-      return;
+
+      navigate('/login'); // ✅ Redirect to login
+    } else {
+      throw new Error(data.message || 'Registration failed');
     }
+  } catch (error) {
+    toast({
+      title: "Registration Failed",
+      description: error instanceof Error ? error.message : "An error occurred",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
-    if (formData.password.length < 8) {
-      toast({
-        title: "Password Too Short",
-        description: "Password must be at least 8 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        login(data.token, data.user);
-
-        toast({
-          title: "Registration Successful",
-          description: "Welcome to MarketPlace!",
-        });
-
-        // 🔀 Redirect based on role
-        if (data.user && data.user.role) {
-          switch (data.user.role) {
-            case 'vendor':
-              navigate('/vendor');
-              break;
-            case 'admin':
-              navigate('/admin');
-              break;
-            default:
-              navigate('/');
-          }
-        } else {
-          throw new Error(data.message || 'Registration failed');
-        }
-      } else {
-        throw new Error(data.message || 'Registration failed');
-      }
-    } catch (error) {
-      toast({
-        title: "Registration Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
