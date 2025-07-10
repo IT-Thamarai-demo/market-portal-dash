@@ -1,10 +1,6 @@
 
 import React from 'react';
-<<<<<<< HEAD
 import { useCart } from '@/contexts/cartContext';
-=======
-import { useCart } from '@/contexts/CartContext';
->>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
