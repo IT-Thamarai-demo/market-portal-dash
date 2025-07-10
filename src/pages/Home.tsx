@@ -38,7 +38,7 @@ const Home = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/approved`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/products/approved`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
