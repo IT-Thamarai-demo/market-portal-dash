@@ -32,7 +32,11 @@ const Login = () => {
     setLoading(true);
 
     try {
+<<<<<<< HEAD
       const response = await fetch(`http://localhost:5000/api/auth/login`, {
+=======
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+>>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

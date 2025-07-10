@@ -2,15 +2,23 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+<<<<<<< HEAD
 import { useCart } from '@/contexts/cartContext';
+=======
+import { useCart } from '@/contexts/CartContext';
+>>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
   const { getTotalItems } = useCart();
+<<<<<<< HEAD
   const totalItems = getTotalItems();
+=======
+>>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -31,6 +39,8 @@ const Navbar = () => {
     { name: 'Login', path: '/login', show: !isAuthenticated },
     { name: 'Register', path: '/register', show: !isAuthenticated },
   ];
+
+  const totalItems = getTotalItems();
 
   return (
     <nav className="bg-white shadow-lg border-b sticky top-0 z-50">
@@ -54,6 +64,7 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
+<<<<<<< HEAD
 
             {/* Cart Icon */}
             <Link to="/cart" className="relative">
@@ -65,6 +76,26 @@ const Navbar = () => {
               )}
             </Link>
 
+=======
+            
+            {/* Cart Icon - only show for authenticated non-admin, non-vendor users */}
+            {isAuthenticated && user?.role !== 'admin' && user?.role !== 'vendor' && (
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    >
+                      {totalItems}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            )}
+            
+>>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">
@@ -89,7 +120,23 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Cart Icon */}
+            {isAuthenticated && user?.role !== 'admin' && user?.role !== 'vendor' && (
+              <Link to="/cart" className="relative">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <Badge 
+                      variant="destructive" 
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    >
+                      {totalItems}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            )}
             <Button
               variant="ghost"
               size="sm"

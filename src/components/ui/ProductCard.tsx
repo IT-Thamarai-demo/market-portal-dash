@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/cartContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Product {
   id: string;
@@ -39,13 +39,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showActions = true,
 }) => {
   const { user, isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
-
-  // Define role checks
-  const isUser = user?.role === 'user';
-  const isVendor = user?.role === 'vendor';
-  const isAdmin = user?.role === 'admin';
-  const isOwnProduct = isVendor && product.vendorId === user?.id;
+  const { toast } = useToast();
 
   // Cloudinary URL generator with optional transformations
   const getCloudinaryImageUrl = (
@@ -66,20 +60,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
     : null;
 
   // Add to cart action
-  const handleAddToCart = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        image: product.image,
-        cloudinaryPublicId: product.cloudinaryPublicId,
-        quantity: 1,
-      });
-    },
-    [addToCart, product]
-  );
+  const handleAddToCart = () => {
+    toast({
+      title: 'Added to Cart',
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const isVendor = user?.role === 'vendor';
+  const isAdmin = user?.role === 'admin';
+  const isOwnProduct = isVendor && product.vendorId === user?.id;
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
@@ -116,8 +106,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* Add to Cart button - show for approved products for 'user' role or unauthenticated */}
-          {product.status === 'approved' && !isAdmin && (!isAuthenticated || isUser) && (
+          {/* Customer: Add to Cart */}
+          {isAuthenticated && !isVendor && !isAdmin && product.status === 'approved' && (
             <Button onClick={handleAddToCart} className="flex-1">
               Add to Cart
             </Button>

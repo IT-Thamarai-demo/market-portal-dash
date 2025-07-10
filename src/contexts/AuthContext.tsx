@@ -1,46 +1,50 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-  FC,
-} from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
-// ----------------------
-// User Type Definition
-// ----------------------
 interface User {
   id: string;
-  email: string;
   role: 'user' | 'vendor' | 'admin';
 }
 
-// ----------------------
-// Auth Context Type
-// ----------------------
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (token: string, user: User) => void;
-  logout: () => void;
   isAuthenticated: boolean;
+  login: (user: User, token: string) => void;
+  logout: () => void;
+  token: string | null;
 }
 
-// ----------------------
-// Auth Context
-// ----------------------
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ----------------------
-// Custom Hook
-// ----------------------
-export const useAuth = (): AuthContextType => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  const login = (userData: User, authToken: string) => {
+    setUser(userData);
+    setToken(authToken);
+    localStorage.setItem('token', authToken);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, token }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+<<<<<<< HEAD
 };
 
 // ----------------------
@@ -99,3 +103,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 };
 export { useContext };
 
+=======
+};
+>>>>>>> 4d72d3e96d2306c59dfc29fbf4b4cf60aaa15ed7
