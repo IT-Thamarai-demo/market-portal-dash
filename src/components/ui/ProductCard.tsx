@@ -57,7 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     : product.image?.startsWith('http')
     ? product.image
     : product.image
-    ? `http://localhost:5000${product.image}`
+    ? `${import.meta.env.VITE_API_BASE_URL}${product.image}`
     : null;
 
   // Add to cart action
@@ -75,6 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isVendor = user?.role === 'vendor';
   const isAdmin = user?.role === 'admin';
   const isOwnProduct = isVendor && product.vendorId === user?.id;
+  const isCustomer = isAuthenticated && !isVendor && !isAdmin;
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
@@ -111,21 +112,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* Customer: Add to Cart */}
-          {isAuthenticated && !isVendor && !isAdmin && product.status === 'approved' && (
+          {/* Customer: Add to Cart button - always show for approved products */}
+          {isCustomer && product.status === 'approved' && (
             <Button onClick={handleAddToCart} className="flex-1">
               Add to Cart
             </Button>
           )}
 
-          {/* Vendor: Edit button */}
+          {/* Vendor: Edit button for own products */}
           {isOwnProduct && onEdit && (
             <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
               Edit
             </Button>
           )}
 
-          {/* Admin: Approve/Reject buttons */}
+          {/* Admin: Approve/Reject buttons for pending products */}
           {isAdmin && product.status === 'pending' && (
             <>
               {onApprove && (
@@ -143,6 +144,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </Button>
               )}
             </>
+          )}
+
+          {/* Show Add to Cart for non-authenticated users too */}
+          {!isAuthenticated && product.status === 'approved' && (
+            <Button onClick={handleAddToCart} className="flex-1">
+              Add to Cart
+            </Button>
           )}
         </CardFooter>
       )}

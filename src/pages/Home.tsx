@@ -16,6 +16,7 @@ interface Product {
   status: 'approved' | 'pending' | 'rejected';
   category?: string;
   vendorId?: string;
+  cloudinaryPublicId?: string;
 }
 
 const Home = () => {
