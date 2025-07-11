@@ -59,7 +59,8 @@ const Login = () => {
             navigate('/admin');
             break;
           default:
-            navigate('/');
+            navigate('/home');
+
         }
       } else {
         toast({
