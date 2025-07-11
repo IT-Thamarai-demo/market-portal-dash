@@ -7,18 +7,12 @@ import React, {
   FC,
 } from 'react';
 
-// ----------------------
-// User Type Definition
-// ----------------------
 interface User {
   id: string;
   email: string;
   role: 'user' | 'vendor' | 'admin';
 }
 
-// ----------------------
-// Auth Context Type
-// ----------------------
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -27,14 +21,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
 }
 
-// ----------------------
-// Auth Context
-// ----------------------
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ----------------------
-// Custom Hook
-// ----------------------
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -43,9 +31,6 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// ----------------------
-// AuthProvider Component
-// ----------------------
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -54,7 +39,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  // Load user/token from sessionStorage on mount
   useEffect(() => {
     try {
       const storedToken = sessionStorage.getItem('token');
@@ -63,15 +47,14 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-        console.log(storedUser);
+        console.log('Restored user:', storedUser);
       }
     } catch (err) {
-      console.error("Error restoring session:", err);
+      console.error('Error restoring session:', err);
       sessionStorage.clear();
     }
   }, []);
 
-  // Login function
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
@@ -79,7 +62,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  // Logout function
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -97,5 +79,3 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-export { useContext };
-
