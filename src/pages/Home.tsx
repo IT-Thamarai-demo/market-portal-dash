@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import ProductCard from '@/components/ui/ProductCard';
 import { useToast } from '@/hooks/use-toast';
 import { Search } from 'lucide-react';
-import { useContext } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext'; // ✅ FIXED import
 
 interface Product {
   id: string;
@@ -13,6 +19,7 @@ interface Product {
   description: string;
   price: number;
   image?: string;
+  cloudinaryPublicId?: string;
   status: 'approved' | 'pending' | 'rejected';
   category?: string;
   vendorId?: string;
@@ -25,6 +32,7 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth(); // ✅ Added
 
   const categories = ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports'];
 
@@ -47,9 +55,9 @@ const Home = () => {
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to load products. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load products. Please try again.',
+        variant: 'destructive',
       });
       console.error('Error fetching products:', error);
     } finally {
@@ -61,20 +69,19 @@ const Home = () => {
     let filtered = products;
 
     if (searchTerm) {
-      filtered = filtered.filter(product =>
+      filtered = filtered.filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+      filtered = filtered.filter((product) => product.category === selectedCategory);
     }
 
     setFilteredProducts(filtered);
   };
 
-  console.log(useContext)
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -88,19 +95,17 @@ const Home = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero */}
       <div className="bg-gradient-to-r from-primary to-primary/80 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Welcome to MarketPlace
-          </h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Welcome to MarketPlace</h1>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
             Discover amazing products from trusted vendors
           </p>
         </div>
       </div>
 
-      {/* Search and Filter Section */}
+      {/* Search + Filter */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="mb-8">
           <CardContent className="p-6">
@@ -135,10 +140,7 @@ const Home = () => {
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
