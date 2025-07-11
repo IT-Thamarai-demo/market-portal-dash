@@ -15,7 +15,7 @@ import VendorDashboard from "./pages/VendorDashboard";
 import AddProduct from "./pages/AddProduct";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
-import Cart from "./pages/cartscreen";
+import Cart from "./pages/Cart";
 
 const queryClient = new QueryClient();
 
@@ -30,7 +30,8 @@ const App = () => (
             <div className="min-h-screen bg-background">
               <Navbar />
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Register />} /> {/* ✅ Default route */}
+                <Route path="/home" element={<Home />} />  {/* ✅ Home now at /home */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route
