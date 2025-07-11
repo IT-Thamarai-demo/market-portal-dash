@@ -117,11 +117,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {showActions && (
         <CardFooter className="flex gap-2">
           {/* Add to Cart button - show for approved products for 'user' role or unauthenticated */}
-          {product.status === 'approved' && !isAdmin && (!isAuthenticated || isUser) && (
-            <Button onClick={handleAddToCart} className="flex-1">
-              Add to Cart
-            </Button>
-          )}
+          {product.status === 'approved' && (isUser || !user) && (
+  <Button onClick={handleAddToCart} className="flex-1">
+    Add to Cart
+  </Button>
+)}
+
 
           {/* Vendor: Edit button for own products */}
           {isOwnProduct && onEdit && (
