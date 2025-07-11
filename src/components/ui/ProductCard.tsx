@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -38,16 +38,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onReject,
   showActions = true,
 }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { addToCart } = useCart();
 
-  // Define role checks
-  const isUser = user?.role === 'user';
-  const isVendor = user?.role === 'vendor';
-  const isAdmin = user?.role === 'admin';
-  const isOwnProduct = isVendor && product.vendorId === user?.id;
-
-  // Cloudinary URL generator with optional transformations
   const getCloudinaryImageUrl = (
     publicId: string,
     transformations = 'w_500,h_500,c_fill,q_auto,f_auto/'
@@ -56,7 +49,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}${publicId}`;
   };
 
-  // Determine image source with fallbacks
   const imageSrc = product.cloudinaryPublicId
     ? getCloudinaryImageUrl(product.cloudinaryPublicId)
     : product.image?.startsWith('http')
@@ -65,21 +57,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
     ? `${import.meta.env.VITE_API_BASE_URL}${product.image}`
     : null;
 
-  // Add to cart action
-  const handleAddToCart = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        image: product.image,
-        cloudinaryPublicId: product.cloudinaryPublicId,
-        quantity: 1,
-      });
-    },
-    [addToCart, product]
-  );
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      cloudinaryPublicId: product.cloudinaryPublicId,
+      quantity: 1,
+    });
+  };
+
+  const isVendor = user?.role === 'vendor';
+  const isAdmin = user?.role === 'admin';
+  const isUser = user?.role === 'user'; // ✅ NEW VARIABLE
+  const isOwnProduct = isVendor && product.vendorId === user?.id;
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
@@ -116,22 +109,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* Add to Cart button - show for approved products for 'user' role or unauthenticated */}
-          {product.status === 'approved' && (isUser || !user) && (
-  <Button onClick={handleAddToCart} className="flex-1">
-    Add to Cart
-  </Button>
-)}
+          {/* ✅ Only users (not admin or vendor) can add approved products to cart */}
+          {product.status === 'approved' && isUser && (
+            <Button onClick={handleAddToCart} className="flex-1">
+              Add to Cart
+            </Button>
+          )}
 
-
-          {/* Vendor: Edit button for own products */}
+          {/* ✅ Vendor: Edit own products */}
           {isOwnProduct && onEdit && (
             <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
               Edit
             </Button>
           )}
 
-          {/* Admin: Approve/Reject buttons for pending products */}
+          {/* ✅ Admin: Approve/Reject pending products */}
           {isAdmin && product.status === 'pending' && (
             <>
               {onApprove && (
