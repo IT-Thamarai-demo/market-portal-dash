@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CartItem {
@@ -24,12 +24,18 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>(
-    JSON.parse(localStorage.getItem('cartItems') || '[]')
-  );
+  const [items, setItems] = useState<CartItem[]>([]);
   const { toast } = useToast();
 
-  const addToCart = (product: CartItem) => {
+  const addToCart = useCallback((product: CartItem) => {
+    if (!product.id || !product.price || !product.name) {
+      toast({
+        title: 'Error',
+        description: 'Invalid product data.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
       if (existingItem) {
@@ -44,47 +50,52 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       description: `${product.name} has been added to your cart.`,
       variant: 'default',
     });
-  };
+  }, [toast]);
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity < 1) {
       removeFromCart(id);
+      return;
+    }
+    if (quantity > 100) {
+      toast({
+        title: 'Quantity Limit',
+        description: 'Maximum quantity is 100.',
+        variant: 'destructive',
+      });
       return;
     }
     setItems((prevItems) =>
       prevItems.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
-  };
+  }, [toast]);
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
+    const item = items.find((item) => item.id === id);
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
     toast({
       title: 'Removed from Cart',
-      description: 'Item has been removed from your cart.',
+      description: `${item?.name || 'Item'} has been removed from your cart.`,
       variant: 'destructive',
     });
-  };
+  }, [items, toast]);
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
+  }, [items]);
 
-  const getTotalItems = () => {
+  const getTotalItems = useCallback(() => {
     return items.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  }, [items]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
     toast({
       title: 'Cart Cleared',
       description: 'All items have been removed from your cart.',
       variant: 'destructive',
     });
-  };
-
-  useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(items));
-  }, [items]);
+  }, [toast]);
 
   return (
     <CartContext.Provider
