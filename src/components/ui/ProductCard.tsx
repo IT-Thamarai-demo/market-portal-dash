@@ -45,7 +45,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
     publicId: string,
     transformations = 'w_500,h_500,c_fill,q_auto,f_auto/'
   ) => {
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dq43oxtjn';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    if (!cloudName) {
+      console.warn('Cloudinary cloud name not set');
+      return '/assets/placeholder-product.png';
+    }
     return `https://res.cloudinary.com/${cloudName}/image/upload/${transformations}${publicId}`;
   };
 
@@ -55,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     ? product.image
     : product.image
     ? `${import.meta.env.VITE_API_BASE_URL}${product.image}`
-    : null;
+    : '/assets/placeholder-product.png';
 
   const handleAddToCart = () => {
     addToCart({
@@ -69,28 +73,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
     });
   };
 
-  const isVendor = user?.role === 'vendor';
+  const isVendor = user?.role === 'vendor' && user?.id;
   const isAdmin = user?.role === 'admin';
-  const isUser = user?.role === 'user'; // ✅ NEW VARIABLE
+  const isUser = user?.role === 'user';
   const isOwnProduct = isVendor && product.vendorId === user?.id;
 
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="aspect-square bg-gray-200 rounded-md mb-4 flex items-center justify-center overflow-hidden">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={product.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder-product.png';
-              }}
-            />
-          ) : (
-            <span className="text-gray-500">No Image</span>
-          )}
+          <img
+            src={imageSrc}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/assets/placeholder-product.png';
+            }}
+          />
         </div>
         <CardTitle className="line-clamp-2">{product.name}</CardTitle>
         <CardDescription className="line-clamp-3">{product.description}</CardDescription>
@@ -101,7 +101,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <span className="text-2xl font-bold text-primary">
             ${product.price.toFixed(2)}
           </span>
-          <Badge variant={product.status === 'approved' ? 'default' : 'secondary'}>
+          <Badge
+            variant={
+              product.status === 'approved'
+                ? 'default'
+                : product.status === 'pending'
+                ? 'secondary'
+                : 'destructive'
+            }
+          >
             {product.status}
           </Badge>
         </div>
@@ -109,21 +117,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {showActions && (
         <CardFooter className="flex gap-2">
-          {/* ✅ Only users (not admin or vendor) can add approved products to cart */}
           {product.status === 'approved' && isUser && (
-            <Button onClick={handleAddToCart} className="flex-1">
+            <Button onClick={handleAddToCart} className="flex-1" aria-label={`Add ${product.name} to cart`}>
               Add to Cart
             </Button>
           )}
-
-          {/* ✅ Vendor: Edit own products */}
           {isOwnProduct && onEdit && (
             <Button onClick={() => onEdit(product)} variant="outline" className="flex-1">
               Edit
             </Button>
           )}
-
-          {/* ✅ Admin: Approve/Reject pending products */}
           {isAdmin && product.status === 'pending' && (
             <>
               {onApprove && (
